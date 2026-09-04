@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Binary Reproducibility Checker{% endblock %}
+{% block content %}
+<h1>Dashboard</h1>
+<p>Real-time overview of Binary Reproducibility Checker scans for <strong>{{ current_user.username }}</strong>.</p>
+
+<div class="grid">
+  <div class="stat-tile"><div class="value">{{ counters.total_scans }}</div><div class="label">Scans Run</div></div>
+  <div class="stat-tile"><div class="value">{{ counters.total_findings }}</div><div class="label">Findings</div></div>
+  <div class="stat-tile"><div class="value">{{ counters.total_alerts }}</div><div class="label">Alerts</div></div>
+  <div class="stat-tile"><div class="value">{{ counters.open_incidents }}</div><div class="label">Open Incidents</div></div>
+</div>
+
+<div class="card">
+  <h2>Run a New Comparison</h2>
+  <p>Enter two real, readable directory paths on this machine — the output of Build A and the output of Build B (e.g. two independent build runs of the same source tree). The Security Engine walks both live and hashes every real file with <code>hashlib.sha256</code> — no simulated results.</p>
+  <form method="POST" action="{{ url_for('dashboard.run_scan') }}">
+    <input type="text" name="target_path" placeholder="/path/to/build-a" value="">
+    <input type="text" name="target_path_b" placeholder="/path/to/build-b" value="">
+    <button type="submit">Run Comparison</button>
+  </form>
+</div>
+
+<div class="card">
+  <h2>Recent Scans</h2>
+  {% if recent_scans %}
+  <table>
+    <tr><th>ID</th><th>Build A</th><th>Build B</th><th>Status</th><th>Files</th><th>Started</th></tr>
+    {% for s in recent_scans %}
+    <tr>
+      <td><a href="{{ url_for('logs.detail', scan_id=s.id) }}">#{{ s.id }}</a></td>
+      <td class="mono">{{ s.target_path }}</td>
+      <td class="mono">{{ s.target_path_b }}</td>
+      <td>{{ s.status }}</td>
+      <td>{{ s.files_scanned }}</td>
+      <td>{{ s.started_at }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p>No scans yet. Run your first comparison above.</p>
+  {% endif %}
+</div>
+{% endblock %}
